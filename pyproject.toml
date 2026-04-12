@@ -1,7 +1,7 @@
 [project]
 name = "hullcheck"
 version = "0.1.0"
-description = "Add your description here"
+description = "Automatically checks and updates Docker containers when new images are available."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
