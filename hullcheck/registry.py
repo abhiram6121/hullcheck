@@ -11,6 +11,6 @@ def pull_image(client, image_name):
     try:
         client.images.pull(image_name)
         return True
-    except Exception as e:
+    except Exception as e: # noqa: BLE001
         logger.warning(f"Pull failed for {image_name.split(':')[0]}: {e}")
         return False

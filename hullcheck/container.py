@@ -21,5 +21,5 @@ def recreate_compose_container(container):
             cwd=workdir,
             check=True,
         )
-    except Exception as e:
+    except Exception as e: # noqa: BLE001
         logger.error(f"Docker compose failed for {container.name}: {e}")

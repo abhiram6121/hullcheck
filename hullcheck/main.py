@@ -1,7 +1,8 @@
-import docker
-from docker.errors import APIError, ImageNotFound
 import logging
-from container import recreate_container, recreate_compose_container
+
+import docker
+from container import recreate_compose_container, recreate_container
+from docker.errors import APIError, ImageNotFound
 from registry import get_remote_data, pull_image
 
 logging.basicConfig(level=logging.INFO)
@@ -12,14 +13,18 @@ def main():
     client = docker.from_env()
     containers = client.containers.list()
     for container in containers:
-        repo_digests = container.image.attrs["RepoDigests"]
+        image = container.image
+        if image is None:
+            logger.debug(f"Skipping {container.name} — no image info")
+            continue
+        repo_digests = image.attrs["RepoDigests"]
 
         if not repo_digests:
             logger.debug(f"Skipping {container.name} — local image")
             continue
 
-        if container.image.tags:
-            image_name = container.image.tags[0]
+        if image.tags:
+            image_name = image.tags[0]
         else:
             image_name = container.attrs["Config"]["Image"]
 
@@ -37,18 +42,18 @@ def main():
             else:
                 logger.info(f"{container.name} is up to date")
 
-        except APIError as e:
-            logger.error(f"{e.explanation}")
         except ImageNotFound:
             logger.error(f"{image_name} not found in registry")
-        except Exception as e:
+        except APIError as e:
+            logger.error(f"{e.explanation}")
+        except Exception as e: # noqa: BLE001
             logger.error(f"unexpected error: {type(e).__name__}")
 
     try:
         client.images.prune()
     except APIError as e:
         logger.error(f"{e.explanation}")
-    except Exception as e:
+    except Exception as e: # noqa: BLE001
         logger.error(f"unexpected error: {type(e).__name__}")
 
 
